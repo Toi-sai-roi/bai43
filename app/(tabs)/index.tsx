@@ -1,98 +1,113 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
+import { useState } from 'react';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+// Lấy chiều rộng màn hình để fix lỗi biến width chưa định nghĩa
+const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+export default function App() {
+  const [phone, setPhone] = useState("");
+
+  const validatePhone = () => {
+    const regex = /^[0-9]{10}$/;
+    if (phone === "") {
+      alert("Vui lòng nhập số điện thoại");
+      return;
+    }
+    if (regex.test(phone)) {
+      alert("Số điện thoại hợp lệ");
+    } else {
+      alert("Số điện thoại không đúng định dạng (cần 10 số)");
+    }
+  };
+
+  // Kiểm tra xem đã nhập đủ 10 số chưa để đổi màu nút
+  const isReady = phone.length === 10;
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Đăng nhập</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+        <Text style={styles.label}>Nhập số điện thoại</Text>
+
+        <Text style={styles.desc}>
+          Dùng số điện thoại để đăng nhập hoặc đăng ký tài khoản tại OneHousing Pro
+        </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Nhập số điện thoại của bạn"
+          keyboardType="phone-pad"
+          value={phone}
+          onChangeText={setPhone}
+          maxLength={10}
+        />
+
+        {/* Thêm style động: nếu đủ 10 số thì nút xanh lên */}
+        <TouchableOpacity 
+          style={[styles.continueBtn, isReady && styles.continueBtnActive]} 
+          onPress={validatePhone}
+        >
+          <Text style={[styles.continueText, isReady && {color: '#fff'}]}>Tiếp tục</Text>
+        </TouchableOpacity>
+
+        <StatusBar style="auto" />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  wrapper: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center', // Căn giữa màn hình nếu cần
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  container: {
+    width: width > 500 ? 400 : '100%',
+    maxWidth: 400,
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 40,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginTop: 30,
+  },
+  desc: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 8,
+    lineHeight: 20,
+  },
+  input: {
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+    paddingVertical: 12,
+    fontSize: 18,
+    marginTop: 30,
+    marginBottom: 40,
+  },
+  continueBtn: {
+    backgroundColor: '#e0e0e0',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  continueBtnActive: {
+    backgroundColor: '#007AFF', // Màu xanh đặc trưng mobile
+  },
+  continueText: {
+    fontSize: 16,
+    color: '#999',
+    fontWeight: '600',
   },
 });
