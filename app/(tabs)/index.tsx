@@ -4,16 +4,33 @@ import { useState } from 'react';
 
 const { width } = Dimensions.get('window');
 
-export default function App() {
+// ─── HomeScreen ───────────────────────────────────────────────
+function HomeScreen({ phone, onLogout }: { phone: string; onLogout: () => void }) {
+  return (
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Trang chủ</Text>
+        <Text style={{ marginTop: 20, fontSize: 16 }}>Số điện thoại: {phone}</Text>
+        <TouchableOpacity style={[styles.continueBtn, styles.continueBtnActive, { marginTop: 30 }]} onPress={onLogout}>
+          <Text style={[styles.continueText, { color: '#fff' }]}>Đăng xuất</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
 
+// ─── App ──────────────────────────────────────────────────────
+export default function App() {
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState(""); //thêm
+  const [error, setError] = useState("");
+  const [screen, setScreen] = useState<"login" | "home">("login");
+  const [loggedPhone, setLoggedPhone] = useState("");
 
   const formatPhone = (text: string): void => {
-    const numbers = text.replace(/[^0-9]/g, ""); //thêm
-  
+    const numbers = text.replace(/[^0-9]/g, "");
+
     let formatted = numbers;
-  
+
     if (numbers.length > 3 && numbers.length <= 6) {
       formatted = numbers.slice(0,3) + " " + numbers.slice(3);
     } 
@@ -23,14 +40,15 @@ export default function App() {
     else if (numbers.length > 8) {
       formatted = numbers.slice(0,3) + " " + numbers.slice(3,6) + " " + numbers.slice(6,8) + " " + numbers.slice(8,10);
     }
-  
+
     setPhone(formatted);
   };
 
   const validatePhone = () => {
+    const rawPhone = phone.replace(/\s/g, "");
 
-    const rawPhone = phone.replace(/\s/g, ""); //thêm
-    const regex = /^[0-9]{10}$/;
+    // Tối thiểu 10 số, bắt đầu bằng 0, số thứ 2 khác 0
+    const regex = /^0[1-9][0-9]{8,}$/;
 
     if (rawPhone === "") {
       setError("Vui lòng nhập số điện thoại");
@@ -43,10 +61,15 @@ export default function App() {
     }
 
     setError("");
-    alert("Số điện thoại hợp lệ");
+    setLoggedPhone(phone);
+    setScreen("home");
   };
 
-  const isReady = phone.replace(/\s/g, "").length === 10;
+  const isReady = phone.replace(/\s/g, "").length >= 10;
+
+  if (screen === "home") {
+    return <HomeScreen phone={loggedPhone} onLogout={() => { setPhone(""); setScreen("login"); }} />;
+  }
 
   return (
     <View style={styles.wrapper}>
@@ -64,14 +87,14 @@ export default function App() {
           style={styles.input}
           placeholder="Nhập số điện thoại của bạn"
           keyboardType="phone-pad"
-          value={phone} //thêm
-          onChangeText={formatPhone} //sửa
+          value={phone}
+          onChangeText={formatPhone}
           maxLength={13}
         />
 
-        {error !== "" && ( //thêm
+        {error !== "" && (
           <Text style={styles.error}>{error}</Text>
-        )} 
+        )}
 
         <TouchableOpacity
           style={[styles.continueBtn, isReady && styles.continueBtnActive]}
