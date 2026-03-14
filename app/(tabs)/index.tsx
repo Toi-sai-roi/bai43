@@ -2,32 +2,21 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Dimensions } from 'react-native';
 import { useState } from 'react';
 
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 const { width } = Dimensions.get('window');
 
-// HomeScreen - thêm
-function HomeScreen({ phone, onLogout }: { phone: string; onLogout: () => void }) { // thêm
-  return (
-    <View style={styles.wrapper}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Trang chủ</Text> {/* thêm */}
-        <Text style={{ marginTop: 20, fontSize: 16 }}>Số điện thoại: {phone}</Text> {/* thêm */}
-        <TouchableOpacity style={[styles.continueBtn, styles.continueBtnActive, { marginTop: 30 }]} onPress={onLogout}> {/* thêm */}
-          <Text style={[styles.continueText, { color: '#fff' }]}>Đăng xuất</Text> {/* thêm */}
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-}
+const Stack = createNativeStackNavigator();
 
-// App
-export default function App() {
+
+// LOGIN SCREEN
+function LoginScreen({ navigation } : any) {
+
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
 
-  const [screen, setScreen] = useState<"login" | "home">("login"); // thêm
-  const [loggedPhone, setLoggedPhone] = useState(""); // thêm
+  const formatPhone = (text : any) => {
 
-  const formatPhone = (text: string): void => {
     const numbers = text.replace(/[^0-9]/g, "");
 
     let formatted = numbers;
@@ -39,16 +28,16 @@ export default function App() {
       formatted = numbers.slice(0,3) + " " + numbers.slice(3,6) + " " + numbers.slice(6);
     }
     else if (numbers.length > 8) {
-      formatted = numbers.slice(0,3) + " " + numbers.slice(3,6) + " " + numbers.slice(6,8) + " " + numbers.slice(8);
+      formatted = numbers.slice(0,3) + " " + numbers.slice(3,6) + " " + numbers.slice(6,8) + " " + numbers.slice(8,10);
     }
 
     setPhone(formatted);
   };
 
   const validatePhone = () => {
-    const rawPhone = phone.replace(/\s/g, "");
 
-    const regex = /^0[1-9][0-9]{8,}$/; // sửa regex kiểm tra số điện thoại
+    const rawPhone = phone.replace(/\s/g, "");
+    const regex = /^0[1-9][0-9]{8,}$/;
 
     if (rawPhone === "") {
       setError("Vui lòng nhập số điện thoại");
@@ -61,15 +50,11 @@ export default function App() {
     }
 
     setError("");
-    setLoggedPhone(phone); // thêm
-    setScreen("home"); // thêm
+
+    navigation.navigate("Home", { phone: phone });
   };
 
-  const isReady = phone.replace(/\s/g, "").length >= 10; // sửa điều kiện (>= 10)
-
-  if (screen === "home") { // thêm
-    return <HomeScreen phone={loggedPhone} onLogout={() => { setPhone(""); setScreen("login"); }} />; // thêm
-  }
+  const isReady = phone.replace(/\s/g, "").length >= 10;
 
   return (
     <View style={styles.wrapper}>
@@ -112,6 +97,56 @@ export default function App() {
   );
 }
 
+
+// HOME SCREEN
+function HomeScreen({ route, navigation } : any) {
+
+  const { phone } = route.params;
+
+  return (
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+
+        <Text style={styles.title}>Trang chủ</Text>
+
+        <Text style={{ marginTop: 20, fontSize: 16 }}>
+          Số điện thoại: {phone}
+        </Text>
+
+        <TouchableOpacity
+          style={[styles.continueBtn, styles.continueBtnActive, { marginTop: 30 }]}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <Text style={[styles.continueText, { color: "#fff" }]}>
+            Đăng xuất
+          </Text>
+        </TouchableOpacity>
+
+      </View>
+    </View>
+  );
+}
+
+
+// APP
+export default function App() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Home"
+        component={HomeScreen}
+      />
+    </Stack.Navigator>
+  );
+}
+
+
+// STYLE
 const styles = StyleSheet.create({
 
   wrapper: {
@@ -152,7 +187,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#ddd',
     paddingVertical: 14,
-    paddingHorizontal: 10, // thêm
+    paddingHorizontal: 6,
     fontSize: 18,
     marginTop: 30,
   },
